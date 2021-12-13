@@ -295,6 +295,167 @@ void Cmd_Give_f (edict_t *ent)
 	}
 }
 
+void Cmd_Buy_f(edict_t* ent)
+{
+	char* name;
+	gitem_t* it;
+	int			index;
+	int			i;
+	qboolean	give_all;
+	edict_t* it_ent;
+
+	if (deathmatch->value && !sv_cheats->value)
+	{
+		gi.cprintf(ent, PRINT_HIGH, "You must run the server with '+set cheats 1' to enable this command.\n");
+		return;
+	}
+
+	name = gi.args();
+	if (ent->client->pers.wallet > 0)
+	{
+		if (Q_stricmp(name, "pokeballs") == 0)
+			name = "grenades";
+		else if (Q_stricmp(name, "upgrade") == 0)
+			name = "grenade launcher";
+		else if (Q_stricmp(name, "potion") == 0)
+			name = "shotgun";
+		else if (Q_stricmp(name, "super potion") == 0)
+			name = "super shotgun";
+		else if (Q_stricmp(name, "full heal") == 0)
+			name = "railgun";
+
+		ent->client->pers.wallet = ent->client->pers.wallet - 100;
+	}
+
+	if (Q_stricmp(name, "all") == 0)
+		give_all = true;
+	else
+		give_all = false;
+
+	if (give_all || Q_stricmp(gi.argv(1), "health") == 0)
+	{
+		if (gi.argc() == 3)
+			ent->health = atoi(gi.argv(2));
+		else
+			ent->health = ent->max_health;
+		if (!give_all)
+			return;
+	}
+
+	if (give_all || Q_stricmp(name, "weapons") == 0)
+	{
+		for (i = 0; i < game.num_items; i++)
+		{
+			it = itemlist + i;
+			if (!it->pickup)
+				continue;
+			if (!(it->flags & IT_WEAPON))
+				continue;
+			ent->client->pers.inventory[i] += 1;
+		}
+		if (!give_all)
+			return;
+	}
+
+	if (give_all || Q_stricmp(name, "ammo") == 0)
+	{
+		for (i = 0; i < game.num_items; i++)
+		{
+			it = itemlist + i;
+			if (!it->pickup)
+				continue;
+			if (!(it->flags & IT_AMMO))
+				continue;
+			Add_Ammo(ent, it, 1000);
+		}
+		if (!give_all)
+			return;
+	}
+
+	if (give_all || Q_stricmp(name, "armor") == 0)
+	{
+		gitem_armor_t* info;
+
+		it = FindItem("Jacket Armor");
+		ent->client->pers.inventory[ITEM_INDEX(it)] = 0;
+
+		it = FindItem("Combat Armor");
+		ent->client->pers.inventory[ITEM_INDEX(it)] = 0;
+
+		it = FindItem("Body Armor");
+		info = (gitem_armor_t*)it->info;
+		ent->client->pers.inventory[ITEM_INDEX(it)] = info->max_count;
+
+		if (!give_all)
+			return;
+	}
+
+	if (give_all || Q_stricmp(name, "Power Shield") == 0)
+	{
+		it = FindItem("Power Shield");
+		it_ent = G_Spawn();
+		it_ent->classname = it->classname;
+		SpawnItem(it_ent, it);
+		Touch_Item(it_ent, ent, NULL, NULL);
+		if (it_ent->inuse)
+			G_FreeEdict(it_ent);
+
+		if (!give_all)
+			return;
+	}
+
+	if (give_all)
+	{
+		for (i = 0; i < game.num_items; i++)
+		{
+			it = itemlist + i;
+			if (!it->pickup)
+				continue;
+			if (it->flags & (IT_ARMOR | IT_WEAPON | IT_AMMO))
+				continue;
+			ent->client->pers.inventory[i] = 1;
+		}
+		return;
+	}
+
+	it = FindItem(name);
+	if (!it)
+	{
+		name = gi.argv(1);
+		it = FindItem(name);
+		if (!it)
+		{
+			gi.cprintf(ent, PRINT_HIGH, "unknown item\n");
+			return;
+		}
+	}
+
+	if (!it->pickup)
+	{
+		gi.cprintf(ent, PRINT_HIGH, "non-pickup item\n");
+		return;
+	}
+
+	index = ITEM_INDEX(it);
+
+	if (it->flags & IT_AMMO)
+	{
+		if (gi.argc() == 3)
+			ent->client->pers.inventory[index] = atoi(gi.argv(2));
+		else
+			ent->client->pers.inventory[index] += it->quantity;
+	}
+	else
+	{
+		it_ent = G_Spawn();
+		it_ent->classname = it->classname;
+		SpawnItem(it_ent, it);
+		Touch_Item(it_ent, ent, NULL, NULL);
+		if (it_ent->inuse)
+			G_FreeEdict(it_ent);
+	}
+}
+
 
 /*
 ==================
@@ -943,12 +1104,14 @@ void ClientCommand (edict_t *ent)
 	if (level.intermissiontime)
 		return;
 
-	if (Q_stricmp (cmd, "use") == 0)
-		Cmd_Use_f (ent);
-	else if (Q_stricmp (cmd, "drop") == 0)
-		Cmd_Drop_f (ent);
-	else if (Q_stricmp (cmd, "give") == 0)
-		Cmd_Give_f (ent);
+	if (Q_stricmp(cmd, "use") == 0)
+		Cmd_Use_f(ent);
+	else if (Q_stricmp(cmd, "drop") == 0)
+		Cmd_Drop_f(ent);
+	else if (Q_stricmp(cmd, "give") == 0)
+		Cmd_Give_f(ent);
+	else if (Q_stricmp (cmd, "buy") == 0)
+		Cmd_Buy_f(ent);
 	else if (Q_stricmp (cmd, "god") == 0)
 		Cmd_God_f (ent);
 	else if (Q_stricmp (cmd, "notarget") == 0)

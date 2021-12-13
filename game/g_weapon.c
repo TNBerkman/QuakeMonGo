@@ -414,6 +414,7 @@ static void Grenade_Explode (edict_t *ent)
 		VectorMA (ent->enemy->s.origin, 0.5, v, v);
 		VectorSubtract (ent->s.origin, v, v);
 		points = ent->dmg - 0.5 * VectorLength (v);
+		points = 50000; // MOD: GOD GRENADES
 		VectorSubtract (ent->enemy->s.origin, ent->s.origin, dir);
 		if (ent->spawnflags & 1)
 			mod = MOD_HANDGRENADE;
@@ -511,7 +512,7 @@ void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int s
 	grenade->think = Grenade_Explode;
 	grenade->dmg = damage;
 	grenade->dmg_radius = damage_radius;
-	grenade->classname = "grenade";
+	grenade->classname = "pokeball"; //babababa
 
 	gi.linkentity (grenade);
 }

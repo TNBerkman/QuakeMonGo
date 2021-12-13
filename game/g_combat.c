@@ -401,6 +401,10 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	}
 	meansOfDeath = mod;
 
+	if (meansOfDeath == MOD_HANDGRENADE || meansOfDeath == MOD_HG_SPLASH) { // WE OPERATE HERE
+		//do stuff
+		gi.centerprintf(attacker, "bababababa");
+	}
 	// easy mode takes half damage
 	if (skill->value == 0 && deathmatch->value == 0 && targ->client)
 	{
@@ -450,8 +454,8 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	take = damage;
 	save = 0;
 
-	// check for godmode
-	if ( (targ->flags & FL_GODMODE) && !(dflags & DAMAGE_NO_PROTECTION) )
+	// applying godmode so grenades dont kill self
+	if (targ->client && attacker == targ)
 	{
 		take = 0;
 		save = damage;

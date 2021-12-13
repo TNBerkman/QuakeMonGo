@@ -840,6 +840,7 @@ typedef struct
 	int			health;
 	int			max_health;
 	int			savedFlags;
+	int			wallet;
 
 	int			selected_item;
 	int			inventory[MAX_ITEMS];
@@ -1109,5 +1110,6 @@ struct edict_s
 	// common data blocks
 	moveinfo_t		moveinfo;
 	monsterinfo_t	monsterinfo;
+
 };
 

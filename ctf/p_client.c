@@ -299,6 +299,7 @@ void ClientObituary (edict_t *self, edict_t *inflictor, edict_t *attacker)
 			switch (mod)
 			{
 			case MOD_BLASTER:
+				gi.centerprintf(self, "bababababa");
 				message = "was blasted by";
 				break;
 			case MOD_SHOTGUN:
