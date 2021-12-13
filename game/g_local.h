@@ -841,6 +841,8 @@ typedef struct
 	int			max_health;
 	int			savedFlags;
 	int			wallet;
+	int			candy;
+	edict_t		pokemon;
 
 	int			selected_item;
 	int			inventory[MAX_ITEMS];

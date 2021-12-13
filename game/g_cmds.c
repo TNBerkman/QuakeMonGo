@@ -311,6 +311,8 @@ void Cmd_Buy_f(edict_t* ent)
 	}
 
 	name = gi.args();
+
+	// shop stuff
 	if (ent->client->pers.wallet > 0)
 	{
 		if (Q_stricmp(name, "pokeballs") == 0)

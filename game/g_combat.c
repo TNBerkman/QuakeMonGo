@@ -401,9 +401,23 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	}
 	meansOfDeath = mod;
 
-	if (meansOfDeath == MOD_HANDGRENADE || meansOfDeath == MOD_HG_SPLASH) { // WE OPERATE HERE
-		//do stuff
-		gi.centerprintf(attacker, "bababababa");
+	if (meansOfDeath == MOD_HANDGRENADE || meansOfDeath == MOD_HG_SPLASH ||
+		meansOfDeath == MOD_GRENADE || meansOfDeath == MOD_G_SPLASH) { // WE OPERATE HERE
+		// you caught him!
+		gi.centerprintf(attacker, "caught");
+
+		// payout
+		attacker->client->pers.wallet += 100;
+		attacker->client->pers.candy += 100;
+
+		// actually catch it if you dont have a pokemon
+		if (attacker->client->pers.pokemon == NULL)
+		{
+			attacker->client->pers.pokemon = targ;
+			attacker->client->pers.pokemon->team = attacker->team;
+		}
+
+
 	}
 	// easy mode takes half damage
 	if (skill->value == 0 && deathmatch->value == 0 && targ->client)
