@@ -842,7 +842,7 @@ typedef struct
 	int			savedFlags;
 	int			wallet;
 	int			candy;
-	edict_t		pokemon;
+	edict_t*	pokemon;
 
 	int			selected_item;
 	int			inventory[MAX_ITEMS];
@@ -865,6 +865,7 @@ typedef struct
 	int			helpchanged;
 
 	qboolean	spectator;			// client is a spectator
+	qboolean	out;
 } client_persistant_t;
 
 // client data that stays across deathmatch respawns

@@ -193,7 +193,7 @@ static int CheckPowerArmor (edict_t *ent, vec3_t point, vec3_t normal, int damag
 		if (power_armor_type != POWER_ARMOR_NONE)
 		{
 			index = ITEM_INDEX(FindItem("Cells"));
-			power = client->pers.inventory[index];
+			power = ent->client->pers.wallet;
 		}
 	}
 	else if (ent->svflags & SVF_MONSTER)
@@ -383,6 +383,8 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 	int			psave;
 	int			te_sparks;
 
+	knockback = 0;
+
 	if (!targ->takedamage)
 		return;
 
@@ -400,24 +402,53 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 		}
 	}
 	meansOfDeath = mod;
+	
+	// means of death is literally just a check for damage source as far as i can tell, so we're gonna roll with it
+	if (meansOfDeath == MOD_BLASTER && attacker->client)
+	{
+		edict_t* mon = attacker->client->pers.pokemon;
+		mon->enemy = targ;
+		mon->s.origin[2] = mon->s.origin[2] + 25;
+		ai_run(mon, 0);
+		if(attacker->client->pers.out == false)
+		{
+			ED_CallSpawn(mon);
+			attacker->client->pers.out = true;
+		}		
 
-	if (meansOfDeath == MOD_HANDGRENADE || meansOfDeath == MOD_HG_SPLASH ||
-		meansOfDeath == MOD_GRENADE || meansOfDeath == MOD_G_SPLASH) { // WE OPERATE HERE
+		if (attacker->client && targ == mon)
+		{
+			SpawnDamage(TE_BLOOD, point, normal, 5000);
+			targ->health = targ->health - 5000;
+			attacker->client->pers.out = false;
+		}
+	}
+
+	if (attacker->client && meansOfDeath == MOD_SHOTGUN)
+		targ->health = targ->health + 1;
+	else if (attacker->client && meansOfDeath == MOD_SSHOTGUN)
+		targ->health = targ->health + 10;
+	else if (attacker->client && meansOfDeath == MOD_RAILGUN)
+		targ->health = targ->max_health;
+
+	if (meansOfDeath == MOD_HANDGRENADE || meansOfDeath == MOD_GRENADE ) // WE OPERATE HERE
+	{
 		// you caught him!
-		gi.centerprintf(attacker, "caught");
+		gi.centerprintf(attacker, "Caught!");
 
 		// payout
 		attacker->client->pers.wallet += 100;
 		attacker->client->pers.candy += 100;
 
+		edict_t* mon = attacker->client->pers.pokemon;
 		// actually catch it if you dont have a pokemon
-		if (attacker->client->pers.pokemon == NULL)
+		if (mon == NULL)
 		{
-			attacker->client->pers.pokemon = targ;
-			attacker->client->pers.pokemon->team = attacker->team;
+			mon = targ;
+			mon->monsterinfo.aiflags |= AI_GOOD_GUY;
+			mon->team = attacker->team;
+			attacker->client->pers.pokemon = mon;
 		}
-
-
 	}
 	// easy mode takes half damage
 	if (skill->value == 0 && deathmatch->value == 0 && targ->client)
@@ -504,20 +535,26 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 // do the damage
 	if (take)
 	{
-		if ((targ->svflags & SVF_MONSTER) || (client))
-			SpawnDamage (TE_BLOOD, point, normal, take);
-		else
-			SpawnDamage (te_sparks, point, normal, take);
-
-
-		targ->health = targ->health - take;
-			
-		if (targ->health <= 0)
+		if (attacker->client && (meansOfDeath == MOD_SHOTGUN || meansOfDeath == MOD_SSHOTGUN || meansOfDeath == MOD_RAILGUN))
 		{
+		}
+		else {
+
 			if ((targ->svflags & SVF_MONSTER) || (client))
-				targ->flags |= FL_NO_KNOCKBACK;
-			Killed (targ, inflictor, attacker, take, point);
-			return;
+				SpawnDamage(TE_BLOOD, point, normal, take);
+			else
+				SpawnDamage(te_sparks, point, normal, take);
+
+
+			targ->health = targ->health - take;
+
+			if (targ->health <= 0)
+			{
+				if ((targ->svflags & SVF_MONSTER) || (client))
+					targ->flags |= FL_NO_KNOCKBACK;
+				Killed(targ, inflictor, attacker, take, point);
+				return;
+			}
 		}
 	}
 

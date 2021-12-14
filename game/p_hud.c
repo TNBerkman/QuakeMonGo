@@ -323,9 +323,9 @@ void HelpComputer (edict_t *ent)
 		"xv 50 yv 164 string2 \" kills     goals    secrets\" "
 		"xv 50 yv 172 string2 \"%3i/%3i     %i/%i       %i/%i\" ", 
 		sk,
-		level.level_name,
-		game.helpmessage1,
-		game.helpmessage2,
+		"` or ~ to open console",// level name
+		"shop: pokeballs, upgrade, potion, super potion, full heal", // message 1
+		"blaster = commands, evolve with evolve", // message 2
 		level.killed_monsters, level.total_monsters, 
 		level.found_goals, level.total_goals,
 		level.found_secrets, level.total_secrets);
@@ -420,18 +420,18 @@ void G_SetStats (edict_t *ent)
 	if (power_armor_type && (!index || (level.framenum & 8) ) )
 	{	// flash between power armor and other armor icon
 		ent->client->ps.stats[STAT_ARMOR_ICON] = gi.imageindex ("i_powershield");
-		ent->client->ps.stats[STAT_ARMOR] = cells;
+		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.wallet;
 	}
 	else if (index)
 	{
 		item = GetItemByIndex (index);
 		ent->client->ps.stats[STAT_ARMOR_ICON] = gi.imageindex (item->icon);
-		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.inventory[index];
+		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.wallet;
 	}
 	else
 	{
 		ent->client->ps.stats[STAT_ARMOR_ICON] = 0;
-		ent->client->ps.stats[STAT_ARMOR] = 0;
+		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.wallet;
 	}
 
 	//

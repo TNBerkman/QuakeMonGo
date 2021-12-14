@@ -295,6 +295,17 @@ void Cmd_Give_f (edict_t *ent)
 	}
 }
 
+void Cmd_Evolve_f(edict_t* ent)
+{
+	edict_t* mon = ent->client->pers.pokemon;
+	if (Q_stricmp(mon->classname, "monster_soldier") == 0
+		&& ent->client->pers.candy >= 100) {
+
+		mon->classname = "monster_tank";
+		ent->client->pers.candy = ent->client->pers.candy - 100;
+	}
+}
+
 void Cmd_Buy_f(edict_t* ent)
 {
 	char* name;
@@ -1100,6 +1111,11 @@ void ClientCommand (edict_t *ent)
 	if (Q_stricmp (cmd, "help") == 0)
 	{
 		Cmd_Help_f (ent);
+		return;
+	}
+	if (Q_stricmp(cmd, "evolve") == 0)
+	{
+		Cmd_Evolve_f(ent);
 		return;
 	}
 

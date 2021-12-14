@@ -618,7 +618,7 @@ void InitClientPersistant (gclient_t *client)
 
 	client->pers.health			= 100;
 	client->pers.max_health		= 100;
-	client->pers.wallet			= 100;
+	client->pers.wallet			= 1000;
 	client->pers.pokemon		= NULL;
 	client->pers.candy			= 100;
 
